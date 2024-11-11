@@ -1,47 +1,50 @@
 // agora.js
 import AgoraRTC from 'agora-rtc-sdk-ng';
 
-// Your Agora App ID and Token (you must replace these with your real values)
-const appId = 'YOUR_AGORA_APP_ID';
-const token = 'YOUR_AGORA_TOKEN';
-let client, localAudioTrack, remoteAudioTrack, remoteUid;
+const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+const appId = 'YOUR_AGORA_APP_ID';  // Replace with your Agora App ID
+const token = null;  // Optional: if using a token, generate it from the Agora console
+const channel = 'test_channel';  // Replace with the desired channel
 
-async function startVoiceChat() {
-  client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-  await client.join(appId, 'main-channel', token, null);  // Replace 'main-channel' with the actual channel name
+let localAudioTrack = null;
+let localVideoTrack = null;
 
-  localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-  await client.publish([localAudioTrack]);
+const startVoiceChat = async () => {
+  try {
+    await client.join(appId, channel, token, null);
 
-  client.on('user-published', (user, mediaType) => {
-    if (mediaType === 'audio') {
-      remoteUid = user.uid;
-      client.subscribe(user, mediaType);
-    }
-  });
+    localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+    localVideoTrack = await AgoraRTC.createCameraVideoTrack();
 
-  client.on('user-unpublished', (user) => {
-    if (user.uid === remoteUid) {
-      remoteAudioTrack.stop();
-      remoteAudioTrack = null;
-    }
-  });
-}
+    const localPlayerContainer = document.createElement('div');
+    localPlayerContainer.id = 'local-player';
+    document.getElementById('voice-chat-container').appendChild(localPlayerContainer);
 
-async function stopVoiceChat() {
-  if (localAudioTrack) {
-    localAudioTrack.stop();
-    localAudioTrack.close();
+    localAudioTrack.play(localPlayerContainer);
+    localVideoTrack.play(localPlayerContainer);
+
+    await client.publish([localAudioTrack, localVideoTrack]);
+    console.log('Voice chat started!');
+  } catch (error) {
+    console.error('Error starting voice chat:', error);
   }
+};
 
-  if (remoteAudioTrack) {
-    remoteAudioTrack.stop();
-    remoteAudioTrack.close();
-  }
-
-  if (client) {
+const stopVoiceChat = async () => {
+  try {
+    if (localAudioTrack) {
+      localAudioTrack.stop();
+      localAudioTrack.close();
+    }
+    if (localVideoTrack) {
+      localVideoTrack.stop();
+      localVideoTrack.close();
+    }
     await client.leave();
+    console.log('Voice chat stopped!');
+  } catch (error) {
+    console.error('Error stopping voice chat:', error);
   }
-}
+};
 
 export { startVoiceChat, stopVoiceChat };
