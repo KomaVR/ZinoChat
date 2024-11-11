@@ -1,5 +1,5 @@
 // script.js
-import { auth } from './firebase-config.js';
+import { auth, firestore, GoogleAuthProvider, signInWithPopup, collection, addDoc, query, orderBy, onSnapshot } from './firebase-config.js';
 import { startVoiceChat, stopVoiceChat } from './agora.js';
 
 const googleSignInButton = document.getElementById('google-signin-button');
@@ -13,9 +13,9 @@ const stopVoiceChatButton = document.getElementById('stop-voice-chat');
 
 // Google Sign-In Handler
 googleSignInButton.addEventListener('click', async () => {
-  const provider = new firebase.auth.GoogleAuthProvider();
+  const provider = new GoogleAuthProvider();
   try {
-    const result = await auth.signInWithPopup(provider);
+    const result = await signInWithPopup(auth, provider);
     console.log('User logged in:', result.user);
     authContainer.style.display = 'none';
     chatContainer.style.display = 'block';
@@ -29,20 +29,23 @@ googleSignInButton.addEventListener('click', async () => {
 sendMessageButton.addEventListener('click', async () => {
   const message = messageInput.value;
   if (message.trim()) {
-    const messageRef = firestore.collection('messages').doc();
-    await messageRef.set({
-      text: message,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-    });
-
-    messageInput.value = ''; // Clear input field
+    try {
+      await addDoc(collection(firestore, 'messages'), {
+        text: message,
+        timestamp: new Date()
+      });
+      messageInput.value = ''; // Clear input field
+    } catch (error) {
+      console.error('Error adding message:', error);
+    }
   }
 });
 
-// Fetch messages from Firestore
-firestore.collection('messages').orderBy('timestamp', 'asc').onSnapshot(snapshot => {
+// Fetch messages from Firestore and display
+const messagesQuery = query(collection(firestore, 'messages'), orderBy('timestamp', 'asc'));
+onSnapshot(messagesQuery, (snapshot) => {
   messagesContainer.innerHTML = ''; // Clear previous messages
-  snapshot.forEach(doc => {
+  snapshot.forEach((doc) => {
     const message = doc.data();
     const messageDiv = document.createElement('div');
     messageDiv.textContent = message.text;
@@ -50,7 +53,6 @@ firestore.collection('messages').orderBy('timestamp', 'asc').onSnapshot(snapshot
   });
 });
 
-// Voice Chat Handlers
+// Handle voice chat
 startVoiceChatButton.addEventListener('click', startVoiceChat);
 stopVoiceChatButton.addEventListener('click', stopVoiceChat);
-
