@@ -1,9 +1,8 @@
 // firebase-config.js
-import firebase from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from 'firebase/firestore';
 
-// Initialize Firebase with your Firebase project details
 const firebaseConfig = {
   apiKey: "AIzaSyAq6Kmh8hOtur62RlZptpzjaIeeJ-Dfk5E",
   authDomain: "zinochat-d64f4.firebaseapp.com",
@@ -14,7 +13,9 @@ const firebaseConfig = {
   measurementId: "G-LT4587B5DK"
 };
 
-firebase.initializeApp(firebaseConfig);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const firestore = getFirestore(app);
 
-export const auth = firebase.auth();
-export const firestore = firebase.firestore();
+export { auth, firestore, GoogleAuthProvider, signInWithPopup, collection, addDoc, query, orderBy, onSnapshot };
