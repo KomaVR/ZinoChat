@@ -12,6 +12,7 @@ const startVoiceChatButton = document.getElementById('start-voice-chat');
 const endVoiceChatButton = document.getElementById('end-voice-chat');
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
+const googleSignInButton = document.getElementById('google-signin-button');
 
 // Function to toggle visibility between auth and chat
 function toggleVisibility() {
@@ -23,6 +24,20 @@ function toggleVisibility() {
 function showAuthPage() {
   authContainer.style.display = 'block';
   chatContainer.style.display = 'none';
+}
+
+// Google Sign-In handler
+async function handleGoogleSignIn() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    const result = await auth.signInWithPopup(provider);
+    const user = result.user;
+    console.log('User logged in: ', user);
+    toggleVisibility();
+  } catch (error) {
+    console.error('Google Sign-In Error:', error.message);
+    alert('Google Sign-In failed. Please try again.');
+  }
 }
 
 // Sign-up/Sign-in handler
@@ -120,3 +135,6 @@ endVoiceChatButton.addEventListener('click', () => {
 
 // Event listener for logout
 logoutButton.addEventListener('click', handleLogout);
+
+// Google sign-in button event
+googleSignInButton.addEventListener('click', handleGoogleSignIn);
