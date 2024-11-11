@@ -1,8 +1,10 @@
-import firebase from 'firebase/app';
-import 'firebase/firestore';
-import 'firebase/auth';
+// firebase-config.js
 
-// Firebase configuration
+import firebase from "firebase/app";
+import "firebase/auth";
+import "firebase/firestore";
+
+// Your Firebase configuration (replace with your own values)
 const firebaseConfig = {
   apiKey: "AIzaSyAq6Kmh8hOtur62RlZptpzjaIeeJ-Dfk5E",
   authDomain: "zinochat-d64f4.firebaseapp.com",
@@ -14,13 +16,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-} else {
-  firebase.app();
-}
+firebase.initializeApp(firebaseConfig);
 
-const firestore = firebase.firestore();
-const auth = firebase.auth();
-
-export { firestore, auth };
+// Export Firebase services
+export const auth = firebase.auth();
+export const firestore = firebase.firestore();
