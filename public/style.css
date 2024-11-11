@@ -1,0 +1,39 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f7f7f7;
+  color: #333;
+}
+
+h1 {
+  color: #4c9aff;
+}
+
+#auth-container, #chat-container {
+  margin: 20px;
+}
+
+#messages {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+#message-form {
+  display: flex;
+}
+
+#message-form input {
+  flex: 1;
+  padding: 10px;
+}
+
+#message-form button {
+  padding: 10px;
+  background-color: #4c9aff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#servers {
+  margin-top: 20px;
+}
