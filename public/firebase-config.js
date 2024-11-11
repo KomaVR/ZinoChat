@@ -1,23 +1,20 @@
 // firebase-config.js
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/firestore';
 
-import firebase from "firebase/app";
-import "firebase/auth";
-import "firebase/firestore";
-
-// Your Firebase configuration (replace with your own values)
+// Initialize Firebase with your Firebase project details
 const firebaseConfig = {
-  apiKey: "AIzaSyAq6Kmh8hOtur62RlZptpzjaIeeJ-Dfk5E",
-  authDomain: "zinochat-d64f4.firebaseapp.com",
-  projectId: "zinochat-d64f4",
-  storageBucket: "zinochat-d64f4.firebasestorage.app",
-  messagingSenderId: "568311500844",
-  appId: "1:568311500844:web:c217122431c39847e38189",
-  measurementId: "G-LT4587B5DK"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID",
+  measurementId: "YOUR_MEASUREMENT_ID"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Export Firebase services
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
