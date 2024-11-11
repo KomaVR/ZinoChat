@@ -1,61 +1,122 @@
-const apiUrlMessages = '/api/messages'; // Adjust API URL
-const apiUrlServers = '/api/servers';
+// script.js
 
-// Function to fetch messages
+import { auth, firestore } from './firebase-config'; // Import Firebase services
+
+// DOM Elements
+const authContainer = document.getElementById('auth-container');
+const chatContainer = document.getElementById('chat-container');
+const messageForm = document.getElementById('message-form');
+const messagesContainer = document.getElementById('messages');
+const logoutButton = document.getElementById('logout-button');
+const startVoiceChatButton = document.getElementById('start-voice-chat');
+const endVoiceChatButton = document.getElementById('end-voice-chat');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+
+// Function to toggle visibility between auth and chat
+function toggleVisibility() {
+  authContainer.style.display = 'none';
+  chatContainer.style.display = 'block';
+}
+
+// Function to show auth page
+function showAuthPage() {
+  authContainer.style.display = 'block';
+  chatContainer.style.display = 'none';
+}
+
+// Sign-up/Sign-in handler
+async function handleAuthSubmit(event) {
+  event.preventDefault();
+  const email = emailInput.value;
+  const password = passwordInput.value;
+
+  try {
+    const user = auth.currentUser;
+    if (user) {
+      toggleVisibility();
+    } else {
+      await auth.signInWithEmailAndPassword(email, password);
+      toggleVisibility();
+    }
+  } catch (error) {
+    console.error('Authentication Error:', error.message);
+    alert('Authentication failed. Please try again.');
+  }
+}
+
+// Logout handler
+async function handleLogout() {
+  try {
+    await auth.signOut();
+    showAuthPage();
+  } catch (error) {
+    console.error('Logout Error:', error.message);
+    alert('Failed to log out. Please try again.');
+  }
+}
+
+// Fetch messages from Firestore
 async function fetchMessages() {
-  const response = await fetch(apiUrlMessages);
-  const messages = await response.json();
+  const snapshot = await firestore.collection('messages').orderBy('timestamp', 'asc').get();
+  const messages = snapshot.docs.map(doc => doc.data());
   displayMessages(messages);
 }
 
-// Function to display messages
+// Display messages in the UI
 function displayMessages(messages) {
-  const messageContainer = document.getElementById('messages');
-  messageContainer.innerHTML = '';
+  messagesContainer.innerHTML = '';
   messages.forEach(msg => {
-    const msgElement = document.createElement('div');
-    msgElement.textContent = `${msg.text} - ${msg.userId}`;
-    messageContainer.appendChild(msgElement);
+    const messageElement = document.createElement('div');
+    messageElement.textContent = `${msg.text} - ${msg.userId}`;
+    messagesContainer.appendChild(messageElement);
   });
 }
 
-// Send a new message
-async function sendMessage(message, userId) {
-  const response = await fetch(apiUrlMessages, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ message, userId }),
-  });
-
-  const newMessage = await response.json();
-  displayMessages([newMessage]);
-}
-
-document.getElementById('message-form').addEventListener('submit', (e) => {
-  e.preventDefault();
+// Send message to Firestore
+async function sendMessage(event) {
+  event.preventDefault();
   const message = document.getElementById('message').value;
-  const userId = 'user123'; // Replace with real user ID
-  sendMessage(message, userId);
+  const userId = auth.currentUser ? auth.currentUser.uid : 'guest';
+
+  try {
+    const newMessage = {
+      text: message,
+      userId: userId,
+      timestamp: new Date().toISOString(),
+    };
+
+    await firestore.collection('messages').add(newMessage);
+    displayMessages([newMessage]);
+  } catch (error) {
+    console.error('Error sending message:', error);
+  }
+}
+
+// Event listener for sending messages
+messageForm.addEventListener('submit', sendMessage);
+
+// Auth state change listener
+auth.onAuthStateChanged(user => {
+  if (user) {
+    toggleVisibility();
+    fetchMessages(); // Fetch and display messages after login
+  } else {
+    showAuthPage();
+  }
 });
 
-// Function to fetch servers
-async function fetchServers() {
-  const response = await fetch(apiUrlServers);
-  const servers = await response.json();
-  displayServers(servers);
-}
+// Start Voice Chat (Placeholder for Photon Voice integration)
+startVoiceChatButton.addEventListener('click', () => {
+  console.log('Starting Voice Chat...');
+  // Photon Voice setup would go here
+});
 
-// Function to display servers
-function displayServers(servers) {
-  const serverContainer = document.getElementById('servers');
-  serverContainer.innerHTML = '';
-  servers.forEach(server => {
-    const serverElement = document.createElement('div');
-    serverElement.textContent = server.name;
-    serverContainer.appendChild(serverElement);
-  });
-}
+// End Voice Chat (Placeholder for Photon Voice integration)
+endVoiceChatButton.addEventListener('click', () => {
+  console.log('Ending Voice Chat...');
+  // Photon Voice cleanup would go here
+});
 
-fetchServers();
+// Event listener for logout
+logoutButton.addEventListener('click', handleLogout);
